@@ -1,0 +1,28 @@
+#include <Servo.h>  // 包含舵机库
+
+Servo myServo;      // 创建舵机对象
+
+const int potPin = A0;  // 电位器连接到A0引脚
+const int servoPin = 9; // 舵机连接到数字引脚9
+
+void setup() {
+  myServo.attach(servoPin); // 将舵机引脚附加到舵机对象
+  Serial.begin(9600);       // 启动串口通信，波特率设置为9600
+}
+
+void loop() {
+  int potValue = analogRead(potPin); // 读取电位器的值 (0 - 1023)
+  
+  // 将电位器的值映射到舵机的角度范围 (0 - 180)
+  int servoAngle = map(potValue, 0, 1023, 0, 180);
+  
+  myServo.write(servoAngle); // 设置舵机到对应的角度
+  
+  // 打印电位器值和舵机角度到串口监视器
+  Serial.print("Potentiometer Value: ");
+  Serial.print(potValue);
+  Serial.print(" | Servo Angle: ");
+  Serial.println(servoAngle);
+  
+  delay(15); // 等待舵机到达位置
+}
