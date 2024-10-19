@@ -1,0 +1,84 @@
+#include <DHT.h>
+
+// 定义引脚
+#define DHTPIN A0         // DHT11 传感器连接在 A0 引脚
+#define DHTTYPE DHT11     // 使用 DHT11 传感器
+#define RED_LED_PIN 4     // 红灯连接在4号引脚
+#define GREEN_LED_PIN 2   // 绿灯连接在2号引脚
+#define WHITE_LED_PIN 3   // 白灯连接在3号引脚
+
+DHT dht(DHTPIN, DHTTYPE);  // 创建 DHT 对象
+
+float referenceTemp;  // 用来存储初始室温（基准温度）
+
+void setup() {
+  // 初始化串口通信
+  Serial.begin(9600);
+
+  // 初始化LED引脚为输出模式
+  pinMode(RED_LED_PIN, OUTPUT);
+  pinMode(GREEN_LED_PIN, OUTPUT);
+  pinMode(WHITE_LED_PIN, OUTPUT);
+
+  // 启动 DHT 传感器
+  dht.begin();
+
+  // 检测室温
+  referenceTemp = dht.readTemperature();
+
+  // 检查温度是否读取成功
+  if (isnan(referenceTemp)) {
+    Serial.println("无法读取温度数据");
+    return;
+  }
+
+  // 输出室温数据
+  Serial.print("当前室温: ");
+  Serial.print(referenceTemp);
+  Serial.println(" °C");
+
+  // 白灯闪烁两次，表示输出完成
+  for (int i = 0; i < 2; i++) {
+    digitalWrite(WHITE_LED_PIN, HIGH);
+    delay(500);
+    digitalWrite(WHITE_LED_PIN, LOW);
+    delay(500);
+  }
+}
+
+void loop() {
+  // 读取当前温度
+  float currentTemp = dht.readTemperature();
+
+  // 检查是否成功读取温度
+  if (isnan(currentTemp)) {
+    Serial.println("无法读取温度数据");
+    return;
+  }
+
+  // 打印当前温度
+  Serial.print("当前温度: ");
+  Serial.print(currentTemp);
+  Serial.println(" °C");
+
+  // 判断温度变化并控制灯光
+  if (currentTemp > referenceTemp + 0.5) {
+    // 如果温度上升超过0.5度，亮红灯
+    digitalWrite(RED_LED_PIN, HIGH);
+    digitalWrite(GREEN_LED_PIN, LOW);
+    digitalWrite(WHITE_LED_PIN, LOW);
+  } else if (currentTemp < referenceTemp - 0.5) {
+    // 如果温度下降超过0.5度，亮绿灯
+    digitalWrite(RED_LED_PIN, LOW);
+    digitalWrite(GREEN_LED_PIN, HIGH);
+    digitalWrite(WHITE_LED_PIN, LOW);
+  } else {
+    // 如果温度在基准温度的±0.5度范围内，保持白灯亮
+    digitalWrite(RED_LED_PIN, LOW);
+    digitalWrite(GREEN_LED_PIN, LOW);
+    digitalWrite(WHITE_LED_PIN, HIGH);
+  }
+
+  // 每2秒更新一次
+  delay(2000);
+}
