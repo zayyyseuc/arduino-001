@@ -1,0 +1,38 @@
+// 定义引脚
+const int LDR_PIN = A0;      // 光敏电阻连接在 A0 引脚
+const int LED_PIN = 9;       // 蓝色LED连接在9号引脚
+
+void setup() {
+  // 初始化串口通信以查看LDR的值
+  Serial.begin(9600);
+
+  // 初始化LED引脚为输出模式
+  pinMode(LED_PIN, OUTPUT);
+}
+
+void loop() {
+  // 读取光敏电阻的值
+  int ldrValue = analogRead(LDR_PIN);
+
+  // 打印光敏电阻的当前值
+  Serial.print("LDR值: ");
+  Serial.println(ldrValue);
+
+  // 将 LDR 的值映射到 PWM 范围（0 - 255）
+  // 光线越暗，LDR值越大，所以需要反向映射
+int ledBrightness = map(ldrValue, 43, 142, 255, 0);
+
+
+  // 限制ledBrightness值在0到255之间
+  ledBrightness = constrain(ledBrightness, 0, 255);
+
+  // 输出映射后的亮度值以验证PWM信号是否正确
+  Serial.print("LED亮度: ");
+  Serial.println(ledBrightness);
+
+  // 设置LED的亮度
+  analogWrite(LED_PIN, ledBrightness);
+
+  // 稍作延迟，防止串口过度刷新
+  delay(100);
+}
